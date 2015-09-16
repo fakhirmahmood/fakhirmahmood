@@ -1,31 +1,63 @@
 <?php
 
-if (isset($_GET['file']))
-   $filename=$_GET['file'];
-if (isset($_GET['u']))
-   $userid=$_GET['u'];
-if (isset($_GET['p']))
-   $password=$_GET['p'];
-if (isset($_GET['h']))
-   $host=$_GET['h'];
-if (isset($_GET['d']))
-   $db=$_GET['d'];
-if (isset($_GET['create_table']))
-   $create_table=$_GET['create_table'];
-if (isset($_GET['dry_run']))
-   $dry_run=$_GET['dry_run'];
-if (isset($_GET['help']))
-   $help=$_GET['help'];
+for ($counter=1; $counter < $argc; $counter++)
+{
+    if ($argv[$counter]=="--file")
+    {
+       $filename=$argv[$counter+1];
+    }
+    elseif ($argv[$counter]=="--dry_run")
+    {
+       $dry_run="y";
+    }     
+    elseif ($argv[$counter]=="--help")
+    {
+       $help="y";
+    } 
+    elseif ($argv[$counter]=="--create_table")
+    {
+       $create_table="y";
+    }
+    elseif ($argv[$counter]=="-u")
+    {
+       $userid=$argv[$counter+1];
+    }
+    elseif ($argv[$counter]=="-p")
+    {
+       $password=$argv[$counter+1];
+    }
+    elseif ($argv[$counter]=="-h")
+    {
+       $host=$argv[$counter+1];
+    }
+    elseif ($argv[$counter]=="-d")
+    {
+       $db=$argv[$counter+1];
+    }
+}
 
 if (isset($host) && isset($userid) && isset($password) && isset($db))
+{
    $conn=new mysqli($host,$userid,$password,$db);
-
+   if ($conn->connect_errno) 
+   {
+      echo "Failed to connect to MySQL: (" . $conn->connect_errno . ") " . $conn->connect_error."<br>";
+   }
+}
 if ($create_table=="y")
 {
    $drop_table_query="drop table users";
    $conn->query($drop_table_query);
    $create_table_query="create table users (name varchar(100),surname varchar(100),email varchar(100) UNIQUE)";
-   $conn->query($create_table_query);  
+   $conn->query($create_table_query);
+   if ($conn->connect_errno) 
+   {
+      echo "Failed to create table: (" . $conn->connect_errno . ") " . $conn->connect_error."<br>";
+   }  
+   else
+   {
+      echo "Table created.<br>";
+   }
 }
 elseif ($help=="y")
 {
@@ -60,10 +92,15 @@ while (!feof($csvfile))
            if (!($dry_run=='y'))
            {
               $conn->query($insert_query);
+              if ($conn->connect_errno) 
+              {
+                 echo "Failed to insert row: (" . $conn->connect_errno . ") " . $conn->connect_error."<br>";
+              }
            } 
            echo "Record Inserted.<br>";
          }
       } 
 }
 }
+
 ?>
