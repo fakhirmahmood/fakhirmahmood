@@ -49,10 +49,9 @@ if ($create_table=="y")
    $drop_table_query="drop table users";
    $conn->query($drop_table_query);
    $create_table_query="create table users (name varchar(100),surname varchar(100),email varchar(100) UNIQUE)";
-   $conn->query($create_table_query);
-   if ($conn->connect_errno) 
+   if (!$conn->query($create_table_query))
    {
-      echo "Failed to create table: (" . $conn->connect_errno . ") " . $conn->connect_error."<br>";
+       echo "Failed to create table: (" . $conn->errno . ") " . $conn->error."<br>";
    }  
    else
    {
@@ -62,11 +61,13 @@ if ($create_table=="y")
 elseif ($help=="y")
 {
    echo "--file [csv file name] – this is the name of the CSV to be parsed<br>";
-   echo "--create_table – this will cause the MySQL users table to be built (and no further action will be taken)<br>";
+   echo "--create_table – this will cause the MySQL users table to be built (and no further action will be taken)
+<br>";
    echo "--dry_run – this will be used with the --file directive in the instance that we want to run the script but not insert into the DB. All other functions will be executed, but the database won't be altered<br>";
    echo "-u – MySQL username<br>";
    echo "-p – MySQL password<br>";
    echo "-h – MySQL host<br>";
+   echo "-d – MySQL database<br>";
    echo "--help – which will output the above list of directives with details";
 }
 else
@@ -91,13 +92,19 @@ while (!feof($csvfile))
            $insert_query="insert into users(name,surname,email) values('$name','$surname','$email')";
            if (!($dry_run=='y'))
            {
-              $conn->query($insert_query);
-              if ($conn->connect_errno) 
+              if(!$conn->query($insert_query))
               {
-                 echo "Failed to insert row: (" . $conn->connect_errno . ") " . $conn->connect_error."<br>";
+                 echo "Failed to insert row: (" . $conn->errno . ") " . $conn->error."<br>";
               }
+              else
+              {
+                 echo "Record Inserted.<br>";
+              }  
            } 
-           echo "Record Inserted.<br>";
+           else
+           {
+                echo "Dry insert record successful.<br>";
+           }  
          }
       } 
 }
